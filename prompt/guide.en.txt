@@ -1,0 +1,4 @@
+- Prefer struct over class.
+- Always verify the compile result with `swift test` command when you made a change.
+- Use SwiftTesting as the testing framework.
+- Refer the API definition of the library, which exists on .build/checkouts/ when needed.

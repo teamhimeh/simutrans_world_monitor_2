@@ -96,3 +96,5 @@ Additional Details on the I/O with Simutrans:
 - Writing results to the output file may take some time—use a timeout of 15 seconds.
 
 Since the development of this I/O system in Simutrans is not yet complete and integration testing is not yet feasible, during the development of the Discord bot, create mocks and write unit tests to verify functionality.
+
+Also, follow the instructions on prompt/guide.en.txt.
