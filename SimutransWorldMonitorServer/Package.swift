@@ -5,10 +5,28 @@ import PackageDescription
 
 let package = Package(
     name: "SimutransWorldMonitorServer",
+    platforms: [
+        .macOS(.v13) // Minimum macOS version
+    ],
+    dependencies: [
+        // Discord API wrapper - using DiscordBM as it's Swift-native and supports Swift concurrency
+        .package(url: "https://github.com/DiscordBM/DiscordBM", from: "1.0.0"),
+        // Swift Testing framework
+        .package(url: "https://github.com/swiftlang/swift-testing", from: "0.1.0"),
+    ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
+        // Main executable target
         .executableTarget(
-            name: "SimutransWorldMonitorServer"),
+            name: "SimutransWorldMonitorServer",
+            dependencies: [
+                .product(name: "DiscordBM", package: "DiscordBM")
+            ]),
+        // Test target for unit testing
+        .testTarget(
+            name: "SimutransWorldMonitorServerTests",
+            dependencies: [
+                "SimutransWorldMonitorServer",
+                .product(name: "Testing", package: "swift-testing")
+            ]),
     ]
 )
