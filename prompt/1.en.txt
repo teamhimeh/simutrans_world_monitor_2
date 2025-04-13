@@ -1,0 +1,98 @@
+Develop a server that functions as a Discord bot. This Discord bot is intended to enable the retrieval of various states of the transportation simulation game Simutrans via Discord.
+
+Basic Mechanism: In Simutrans, when JSON-formatted text is written to a specific local file, the game reads the file and then writes JSON-formatted text to an output file containing the results. Leveraging this mechanism, when the Discord bot receives a command from a user on Discord, it writes the necessary command to Simutrans’s command-input file. The bot then monitors the output file for updates; once an update is detected, it notifies the corresponding user on Discord with the result.
+
+Technical Requirements:
+
+- Programming Language: Use Swift (assuming Swift version 6) and actively utilize Swift concurrency. Use SwiftTesting as the testing framework.
+- CLI Tool: This server program should be implemented as a command-line tool. All configuration values are to be provided in a separate text file.
+- Cross-platform Compatibility: The program must run on Windows, macOS, and Linux. Therefore, do not rely on external libraries or Apple platform–specific frameworks (such as Combine). As much as possible, use only the Swift standard library.
+  - For functionalities that require OS-specific implementations, apply the necessary abstractions and initially implement support for macOS only.
+- Directory Structure: The directory SimutransWorldMonitorServer/ is a Swift package directory created using the command swift package init --type executable. The server should be implemented within this directory.
+- Multi-language Support on Discord: The display on the Discord bot should support both English and Japanese, with the capability to add more languages in the future.
+
+Simutrans Functionalities and JSON Data Structures:
+
+Retrieving the List of In-Game Players: Each player is assigned an index number, which is required for subsequent requests.
+
+Input JSON Structure:
+
+```json
+{
+    "command": "get_player_list",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" // A UUID v4 generated randomly for each command execution.
+}
+```
+
+Output JSON Structure:
+
+```json
+{
+    "command": "get_player_list",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", // Indicates the input command this output corresponds to.
+    "result": [
+        {"index": "0", "name": "MyAwesomeCompany"},
+        {"index": "2", "name": "HisPunctualCompany"},
+        {"index": "3", "name": "HerLazyCompany"}
+    ]
+}
+```
+
+Retrieving the List of Routes Owned by a Player:
+
+Input JSON Structure:
+
+```json
+{
+    "command": "get_lines",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "player_index": 0, // Use the company index obtained from "get_player_list"
+    "way_type": "road" // Specifies the category of routes.
+}
+```
+
+Possible way_type Values:
+
+"road" ... for automobiles
+"rail" ... for trains
+"water" ... for ships
+"monorail" ... for monorails
+"maglev" ... for maglev trains
+"tram" ... for trams
+"narrow" ... for narrow gauge railways
+"air" ... for aviation
+
+Output JSON Structure:
+
+```json
+{
+    "command": "get_lines",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "result": [
+        {"id": 42, "name": "Elizabeth line"},
+        {"id": 334, "name": "Piccadilly line"}
+    ]
+}
+```
+
+Note: The "result" field may be empty or may contain an extremely long output.
+
+Error Handling in Simutrans:
+
+When an error occurs on the Simutrans side, the output JSON structure is as follows:
+
+```json
+{
+    "command": "error",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "description": "The player index 42 does not exist." // A descriptive string explaining the error.
+}
+```
+
+Additional Details on the I/O with Simutrans:
+
+- Once Simutrans processes the commands written in the input file, the file is cleared. If the input file still contains data, it means Simutrans has yet to process it; therefore, wait for the file to clear instead of appending additional commands.
+- Simutrans may write to the output file at any arbitrary moment. Hence, if you write the next command to the input file before processing the output file, the output file might be immediately overwritten with the result of the new command.
+- Writing results to the output file may take some time—use a timeout of 15 seconds.
+
+Since the development of this I/O system in Simutrans is not yet complete and integration testing is not yet feasible, during the development of the Discord bot, create mocks and write unit tests to verify functionality.

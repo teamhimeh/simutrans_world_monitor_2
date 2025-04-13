@@ -1,0 +1,97 @@
+Discord botとして機能するためのサーバを開発せよ。
+このDiscord botは、Simutransという交通シミュレーションゲームのいろいろな状態をDiscord経由で取得できるようにすることを目的とする。
+まず、基本的な仕組みを説明する。
+Simutransでは、特定のローカルのファイルにJSON形式のテキストを書き込むと、それを読み取った上で結果出力用のファイルにJSON形式でテキストを書き込む。
+これを利用して、Discord botはDiscordでユーザからコマンドを受け取ったら、Simutransにとってのコマンド入力用ファイルに必要なコマンドを書き込む。結果出力用ファイルの更新を検知し、このファイルが更新されたらそれに従ってDiscord上のユーザに結果を通知する。
+
+技術的なrequirementは以下の通り。
+- 言語はSwiftを使用せよ。Swift versionは6を前提とし、Swift concurrencyを積極的に活用する。テストフレームワークにはSwiftTestingを用いる。
+- このサーバプログラムは、CLIツールである。諸々の設定値は、別途テキストファイルで設定する方式にする。
+- このプログラムは、Windows, macOS, Linuxで実行できなければならない。したがって、外部ライブラリやAppleプラットフォーム専用のフレームワーク（Combineなど）には頼らず、できるだけSwift標準のライブラリだけで実装する。
+  - OS別の実装が必要になる箇所については、必要な抽象化を施した上で、ひとまずmacOS対応分だけ実装すればよい。
+- `SimutransWorldMonitorServer/` ディレクトリ下はswift package init --type executableで作成したSwift packgeのディレクトリである。サーバはこのディレクトリに記述する。
+- Discord bot上での表示は、英語および日本語に対応したい。将来的に対応言語を追加できるようにもする。
+
+Simutransが提供する機能と、その機能に必要な入力JSONデータ構造、出力されるJSONデータ構造は以下の通り。
+
+- ゲーム内プレイヤーの一覧を取得する。各プレイヤーにはindex numberが割り当てられており、この番号は他のリクエストにおいて必要になる。
+
+入力データ構造
+
+```
+{
+    "command": "get_player_list",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", // コマンドに対して毎回ランダムに発行するUUID v4
+}
+```
+
+出力データ構造
+
+```
+{
+    "command": "get_player_list",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", // どの入力コマンドに対する出力か
+    "result": [
+        {"index": "0", "name": "MyAwesomeCompany"},
+        {"index": "2", "name": "HisPunctualCompany"},
+        {"index": "3", "name": "HerLazyCompany"},
+    ],
+}
+```
+
+- プレイヤーが持つ路線の一覧を取得する。
+
+入力データ構造
+
+```
+{
+    "command": "get_lines",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "player_index": 0, // "get_player_list"で取得した会社のindexを使う
+    "way_type": "road", // どのカテゴリの路線一覧を指定するか
+}
+```
+
+waytypeには、以下のものがある。
+- "road" ... 自動車
+- "rail" ... 鉄道
+- "water" ... 船
+- "monorail" ... モノレール
+- "maglev" ... マグレブ
+- "tram" ... 路面電車
+- "narrow" ... ナローゲージ
+- "air" ... 航空
+
+出力データ構造
+
+```
+{
+    "command": "get_lines",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "result": [
+        {"id": 42, "name": "Elizabeth line"},
+        {"id": 334, "name": "Piccadilly line"},
+    ],
+}
+```
+
+"result" は空の場合もあれば非常に長い結果になることもあるので注意せよ。
+
+==========
+
+最後に、Simutrans側で何かしらのエラーが発生したときの出力データ構造は以下の通りである。
+
+```
+{
+    "command": "error",
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "description": "The player index 42 does not exist.", // エラーを説明する文字列
+}
+```
+
+また、Simutransとの入出力の細かい話として以下の点に注意せよ。
+- 入力ファイルに書かれたコマンドがSimutransによって処理されると、入力ファイルの中身は空になる。入力ファイルに中身がある場合はまだSimutransがそれを処理できていないので、追加で書き込むのではなく空になるのを待たなければならない。
+- Simutransは、任意のタイミングで出力ファイルに書き込みを行う。したがって、出力ファイルの中身を処理する前に入力ファイルに次のコマンドを書き込むと出力ファイルが次のコマンドの結果で即時に上書きされることがある。
+- 出力ファイルへの結果出力には時間がかかることがある。15秒をタイムアウトとせよ。
+
+Simutrans側はまだこの入出力システムの開発が完了しておらず、今は統合テストをすることができない。Discord botの開発では、mockを作成し、unit testを記述することで機能の検証を行え。
