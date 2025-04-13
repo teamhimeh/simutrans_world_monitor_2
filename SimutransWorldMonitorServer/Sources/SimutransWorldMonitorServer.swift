@@ -40,11 +40,11 @@ struct SimutransWorldMonitorServer {
         )
         
         // Create Discord client and gateway
-        let client = await DiscordClients.createClient(token: config.discordToken)
-        let gateway = await DiscordClients.createGateway(
-            client: client,
-            intents: [.guildMessages, .messageContent]
+        let gateway = await ShardingGatewayManager(
+            token: config.discordToken, 
+            intents: Gateway.Intent.unprivileged
         )
+        let client = gateway.client
         
         // Create Discord bot
         let discordBot = DiscordBot(
