@@ -178,7 +178,7 @@ import DiscordBM
         }
     }
     
-    /// Responds to an interaction
+    /// Responds to an interaction with an initial waiting message
     /// - Parameters:
     ///   - interaction: The interaction to respond to
     ///   - content: The content of the response
@@ -195,6 +195,21 @@ import DiscordBM
             )
         } catch {
             print("Error responding to interaction: \(error)")
+        }
+    }
+    
+    /// Updates an interaction response with new content
+    /// - Parameters:
+    ///   - interaction: The original interaction
+    ///   - content: The new content for the response
+    private func updateInteractionResponse(interaction: Interaction, content: String) async {
+        do {
+            _ = try await client.updateOriginalInteractionResponse(
+                token: interaction.token,
+                payload: .init(content: content)
+            )
+        } catch {
+            print("Error updating interaction response: \(error)")
         }
     }
     
@@ -266,6 +281,10 @@ import DiscordBM
     ///   - interaction: The interaction to respond to
     ///   - language: The language to use
     private func handlePlayersCommand(interaction: Interaction, language: String) async {
+        // Send initial waiting message
+        let waitingMessage = localization.localized("command.waiting", language: language)
+        await respondToInteraction(interaction: interaction, content: waitingMessage)
+        
         do {
             // Create the command
             let command = GetPlayerListCommand()
@@ -280,7 +299,7 @@ import DiscordBM
             // Check if there are any players
             if response.result.isEmpty {
                 let message = localization.localized("command.getPlayerList.empty", language: language)
-                await respondToInteraction(interaction: interaction, content: message)
+                await updateInteractionResponse(interaction: interaction, content: message)
                 return
             }
             
@@ -292,8 +311,8 @@ import DiscordBM
                 message += "- \(player.name) (Index: \(player.index))\n"
             }
             
-            // Send the message
-            await respondToInteraction(interaction: interaction, content: message)
+            // Update the message with the results
+            await updateInteractionResponse(interaction: interaction, content: message)
         } catch {
             // Handle errors
             await sendErrorMessage(error: error, interaction: interaction, language: language)
@@ -318,6 +337,10 @@ import DiscordBM
             return
         }
         
+        // Send initial waiting message
+        let waitingMessage = localization.localized("command.waiting", language: language)
+        await respondToInteraction(interaction: interaction, content: waitingMessage)
+        
         do {
             // Create the command
             let command = GetLinesCommand(playerIndex: Int(playerIndex), wayType: wayType)
@@ -332,7 +355,7 @@ import DiscordBM
             // Check if there are any lines
             if response.result.isEmpty {
                 let message = localization.localized("command.getLines.empty", language: language, String(playerIndex))
-                await respondToInteraction(interaction: interaction, content: message)
+                await updateInteractionResponse(interaction: interaction, content: message)
                 return
             }
             
@@ -344,8 +367,8 @@ import DiscordBM
                 message += "- \(line.name) (ID: \(line.id))\n"
             }
             
-            // Send the message
-            await respondToInteraction(interaction: interaction, content: message)
+            // Update the message with the results
+            await updateInteractionResponse(interaction: interaction, content: message)
         } catch {
             // Handle errors
             await sendErrorMessage(error: error, interaction: interaction, language: language)
@@ -377,6 +400,13 @@ import DiscordBM
             message = localization.localized("error.unknownError", language: language, error.localizedDescription)
         }
         
-        await respondToInteraction(interaction: interaction, content: message, ephemeral: true)
+        // Check if we've already sent an initial response
+        if interaction.token.isEmpty {
+            // If not, send a new response
+            await respondToInteraction(interaction: interaction, content: message, ephemeral: true)
+        } else {
+            // If we have, update the existing response
+            await updateInteractionResponse(interaction: interaction, content: message)
+        }
     }
 }

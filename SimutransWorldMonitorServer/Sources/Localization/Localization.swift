@@ -55,6 +55,7 @@ struct Localization {
                 "error.unknownError": errorMessages.unknownError,
                 
                 // Command responses
+                "command.waiting": "Processing your request, please wait...",
                 "command.getPlayerList.success": "Player list retrieved successfully:",
                 "command.getPlayerList.empty": "No players found.",
                 "command.getLines.success": "Lines for player {0} retrieved successfully:",
@@ -90,6 +91,7 @@ extension Localization {
         // Add Japanese strings
         localizedStrings["ja"] = [
             // Command responses
+            "command.waiting": "リクエストを処理中です。しばらくお待ちください...",
             "command.getPlayerList.success": "プレイヤーリストの取得に成功しました：",
             "command.getPlayerList.empty": "プレイヤーが見つかりませんでした。",
             "command.getLines.success": "プレイヤー {0} の路線の取得に成功しました：",
