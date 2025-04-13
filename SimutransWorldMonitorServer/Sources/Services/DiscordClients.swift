@@ -1,17 +1,17 @@
 import Foundation
 import DiscordBM
 import NIO
+import AsyncHTTPClient
 
 /// Factory for creating Discord clients and gateway managers
 struct DiscordClients {
     /// Creates a Discord client with the given token
     /// - Parameter token: The Discord bot token
     /// - Returns: A Discord client
-    static func createClient(token: String) -> any DiscordClient {
-        // Create a Discord client with the given token
-        // In a real implementation, this would use the actual DiscordBM client
-        // For testing, we use MockDiscordClient
-        fatalError("Not implemented: Use MockDiscordClient for testing")
+    static func createClient(token: String) async -> any DiscordClient {
+        // In a real implementation, this would create a Discord client
+        // For now, we'll throw a fatal error since we're not implementing the real client yet
+        fatalError("Not implemented: Use a mock client for testing")
     }
     
     /// Creates a gateway manager with the given client
@@ -19,10 +19,9 @@ struct DiscordClients {
     ///   - client: The Discord client
     ///   - intents: The gateway intents
     /// - Returns: A gateway manager
-    static func createGateway(client: any DiscordClient, intents: Gateway.Intent) -> any GatewayManager {
-        // Create a gateway manager with the given client and intents
-        // In a real implementation, this would use the actual DiscordBM gateway manager
-        // For testing, we use MockGatewayManager
-        fatalError("Not implemented: Use MockGatewayManager for testing")
+    static func createGateway(client: any DiscordClient, intents: [Gateway.Intent]) async -> any GatewayManager {
+        // In a real implementation, this would create a gateway manager
+        // For now, we'll throw a fatal error since we're not implementing the real gateway yet
+        fatalError("Not implemented: Use a mock gateway for testing")
     }
 }
