@@ -1,0 +1,24 @@
+{
+    "inputFilePath": "simutrans_input.json",
+    "outputFilePath": "simutrans_output.json",
+    "timeout": 15.0,
+    "discordToken": "YOUR_DISCORD_TOKEN",
+    "defaultLanguage": "en",
+    "supportedLanguages": ["en", "ja"],
+    "errorMessages": {
+        "en": {
+            "commandTimeout": "Command timed out. Please try again later.",
+            "fileAccessError": "Failed to access Simutrans files. Please check if Simutrans is running.",
+            "jsonParsingError": "Failed to parse response from Simutrans. Please report this issue.",
+            "simulationError": "Simutrans reported an error: {0}",
+            "unknownError": "An unknown error occurred: {0}"
+        },
+        "ja": {
+            "commandTimeout": "コマンドがタイムアウトしました。後でもう一度お試しください。",
+            "fileAccessError": "Simutransファイルへのアクセスに失敗しました。Simutransが実行中かどうか確認してください。",
+            "jsonParsingError": "Simutransからのレスポンスの解析に失敗しました。この問題を報告してください。",
+            "simulationError": "Simutransがエラーを報告しました：{0}",
+            "unknownError": "不明なエラーが発生しました：{0}"
+        }
+    }
+}

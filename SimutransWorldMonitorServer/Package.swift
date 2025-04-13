@@ -10,7 +10,7 @@ let package = Package(
     ],
     dependencies: [
         // Discord API wrapper - using DiscordBM as it's Swift-native and supports Swift concurrency
-        .package(url: "https://github.com/DiscordBM/DiscordBM", from: "1.0.0"),
+        .package(url: "https://github.com/DiscordBM/DiscordBM", from: "1.13.0"),
         // Swift Testing framework
         .package(url: "https://github.com/swiftlang/swift-testing", from: "0.1.0"),
     ],
