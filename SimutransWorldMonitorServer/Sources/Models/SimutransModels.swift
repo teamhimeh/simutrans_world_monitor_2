@@ -59,7 +59,7 @@ struct PlayerListResponse: SimutransResponse {
     let result: [Player]
     
     struct Player: Codable {
-        let index: String
+        let index: Int
         let name: String
     }
 }
