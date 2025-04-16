@@ -1,0 +1,126 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on tag pushes that start with 'v'
+
+jobs:
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: '6.0'
+
+      - name: Build for macOS
+        run: |
+          cd SimutransWorldMonitorServer
+          swift build -c release
+          mkdir -p ../artifacts/macos
+          cp .build/release/SimutransWorldMonitorServer ../artifacts/macos/
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimutransWorldMonitorServer-macOS
+          path: artifacts/macos/SimutransWorldMonitorServer
+          retention-days: 7
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: '6.0'
+
+      - name: Build for Linux
+        run: |
+          cd SimutransWorldMonitorServer
+          swift build -c release
+          mkdir -p ../artifacts/linux
+          cp .build/release/SimutransWorldMonitorServer ../artifacts/linux/
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimutransWorldMonitorServer-Linux
+          path: artifacts/linux/SimutransWorldMonitorServer
+          retention-days: 7
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: compnerd/swift-build@v1
+        with:
+          swift-version: '6.0'
+
+      - name: Build for Windows
+        run: |
+          cd SimutransWorldMonitorServer
+          swift build -c release
+          mkdir -p ../artifacts/windows
+          cp .build/release/SimutransWorldMonitorServer.exe ../artifacts/windows/
+        shell: bash
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimutransWorldMonitorServer-Windows
+          path: artifacts/windows/SimutransWorldMonitorServer.exe
+          retention-days: 7
+
+  create-release:
+    name: Create Release
+    needs: [build-macos, build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create ZIP archives
+        run: |
+          cd artifacts
+          zip -r SimutransWorldMonitorServer-macOS.zip SimutransWorldMonitorServer-macOS
+          zip -r SimutransWorldMonitorServer-Linux.zip SimutransWorldMonitorServer-Linux
+          zip -r SimutransWorldMonitorServer-Windows.zip SimutransWorldMonitorServer-Windows
+          
+          # Create zip of sqai_hm_monitor directory
+          cd ..
+          zip -r artifacts/sqai_hm_monitor.zip sqai_hm_monitor
+
+      - name: Get tag name
+        id: get_tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.get_tag.outputs.TAG }}
+          files: |
+            artifacts/SimutransWorldMonitorServer-macOS.zip
+            artifacts/SimutransWorldMonitorServer-Linux.zip
+            artifacts/SimutransWorldMonitorServer-Windows.zip
+            artifacts/sqai_hm_monitor.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
