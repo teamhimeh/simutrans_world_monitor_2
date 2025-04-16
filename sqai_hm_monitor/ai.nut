@@ -33,7 +33,7 @@ function process_request() {
     } else {
         response["command"] <- "error"
         response["id"] <- decoded_command["id"]
-        response["description"] <- "command not found"
+        response["description"] <- "command " + cmd_id + " not found"
     }
     f = file(path_output,"w")
     f.writestr(JSONEncoder.encode(response))
@@ -59,3 +59,6 @@ function step() {
 function new_month() {
 
 }
+
+commands[ID_GET_LINES] <- get_lines_cmd()
+commands[ID_GET_PLAYER_LIST] <- get_players_cmd()

@@ -1,7 +1,4 @@
-include("libs/global")
 include("libs/common")
-
-const ID_GET_LINES = "get_lines"
 
 class get_lines_cmd {
 	wts = [
@@ -55,5 +52,3 @@ class get_lines_cmd {
 		return result
 	}
 }
-
-commands[ID_GET_LINES] <- get_lines_cmd()

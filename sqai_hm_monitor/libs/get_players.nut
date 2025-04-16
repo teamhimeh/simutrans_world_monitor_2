@@ -1,7 +1,3 @@
-include("libs/global")
-
-const ID_GET_PLAYER_LIST = "get_player_list"
-
 class get_players_cmd {
 	// プレイヤーの一覧を返す
 	function exec(param) {
@@ -22,5 +18,3 @@ class get_players_cmd {
         return result
 	}
 }
-
-commands[ID_GET_PLAYER_LIST] <- get_players_cmd()
